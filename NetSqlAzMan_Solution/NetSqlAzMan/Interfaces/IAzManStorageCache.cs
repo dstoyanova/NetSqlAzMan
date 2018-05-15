@@ -98,9 +98,11 @@ namespace NetSqlAzMan.Interfaces
         /// <param name="userSSid">The user S sid.</param>
         /// <param name="groupsSSid">The groups S sid.</param>
         /// <param name="validFor">The valid for.</param>
+        /// <param name="filterStartsWith">The name of the item starts with a certain string.</param>
+        /// <param name="filterEndsWith">The name of the item ends with a certain string.</param>
         /// <param name="contextParameters">The context parameters.</param>
         /// <returns></returns>
-        AuthorizedItem[] GetAuthorizedItems(string storeName, string applicationName, string userSSid, string[] groupsSSid, DateTime validFor, params System.Collections.Generic.KeyValuePair<string, object>[] contextParameters);
+        AuthorizedItem[] GetAuthorizedItems(string storeName, string applicationName, string userSSid, string[] groupsSSid, DateTime validFor, string filterStartsWith = null, string filterEndsWith = null, params System.Collections.Generic.KeyValuePair<string, object>[] contextParameters);
         /// <summary>
         /// Gets or sets the storage.
         /// </summary>

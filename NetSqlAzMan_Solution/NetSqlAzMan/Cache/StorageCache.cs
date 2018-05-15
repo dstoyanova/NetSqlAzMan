@@ -847,7 +847,7 @@ namespace NetSqlAzMan.Cache
                        select t;
         }
 
-        private void storeApplicationItemValidation(string storeName, string applicationName, out IAzManStore store, out IAzManApplication application, out IEnumerable<IAzManItem> allItems)
+        private void storeApplicationItemValidation(string storeName, string applicationName, out IAzManStore store, out IAzManApplication application, out IEnumerable<IAzManItem> allItems, string filterStartsWith = null, string filterEndsWith = null)
         {
             itemResultCache = new Hashtable();
             attributesResultCache = new Hashtable();
@@ -863,8 +863,22 @@ namespace NetSqlAzMan.Cache
                            select a).FirstOrDefault();
             if (application == null)
                 throw SqlAzManException.ApplicationNotFoundException(applicationName, store, null);
-            allItems = from t in application.Items.Values
-                       select t;
+            if (filterStartsWith != null)
+                if (filterEndsWith != null)
+                    allItems = from t in application.Items.Values
+                               where t.Name.StartsWith(filterStartsWith) && t.Name.EndsWith(filterEndsWith)
+                               select t;
+                else
+                    allItems = from t in application.Items.Values
+                               where t.Name.StartsWith(filterStartsWith)
+                               select t;
+            else if (filterEndsWith != null)
+                allItems = from t in application.Items.Values
+                           where t.Name.EndsWith(filterEndsWith)
+                           select t;
+            else
+                allItems = from t in application.Items.Values
+                           select t;
         }
 
         internal AuthorizationType internalCheckAccess(IAzManStore store, IAzManApplication application, IAzManItem item, IEnumerable<IAzManItem> allItems, string userSSid, string[] groupsSSid, DateTime validFor, bool operationsOnly, bool retrieveAttributes, out List<KeyValuePair<string, string>> attributes, params KeyValuePair<string, object>[] contextParameters)
@@ -1190,14 +1204,16 @@ namespace NetSqlAzMan.Cache
         /// <param name="userSSid">The user S sid.</param>
         /// <param name="groupsSSid">The groups S sid.</param>
         /// <param name="validFor">The valid for.</param>
+        /// <param name="filterStartsWith">The name of the item starts with a certain string.</param>
+        /// <param name="filterEndsWith">The name of the item ends with a certain string.</param>
         /// <param name="contextParameters">The context parameters.</param>
         /// <returns></returns>
-        public AuthorizedItem[] GetAuthorizedItems(string storeName, string applicationName, string userSSid, string[] groupsSSid, DateTime validFor, params KeyValuePair<string, object>[] contextParameters)
+        public AuthorizedItem[] GetAuthorizedItems(string storeName, string applicationName, string userSSid, string[] groupsSSid, DateTime validFor, string filterStartsWith = null, string filterEndsWith = null, params KeyValuePair<string, object>[] contextParameters)
         {
             IAzManStore store;
             IAzManApplication application;
             IEnumerable<IAzManItem> allItems;
-            this.storeApplicationItemValidation(storeName, applicationName, out store, out application, out allItems);
+            this.storeApplicationItemValidation(storeName, applicationName, out store, out application, out allItems, filterStartsWith, filterEndsWith);
             List<AuthorizedItem> result = new List<AuthorizedItem>();
             foreach (var item in allItems)
             {
